@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>십몇 − 몇 | 모바일 1인 학습</title>
+<style>
+:root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#24314b;background:#f5f7fc}
+*{box-sizing:border-box}body{margin:0}button,select{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.45;cursor:default}
+.app{max-width:780px;margin:auto;padding:12px 13px 44px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:23px;margin:12px 0}h2{font-size:19px;margin:0 0 12px}
+.card{background:white;border:1px solid #dce3f2;border-radius:19px;padding:17px;margin:13px 0;box-shadow:0 3px 13px #2636590b}
+.muted{color:#65738d;font-size:14px;line-height:1.5}.setupgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}label{font-size:14px;font-weight:750}
+select{display:block;width:100%;border:1px solid #ccd5e6;border-radius:11px;padding:10px 5px;margin-top:5px;background:#fff}
+.btn{border:0;border-radius:13px;padding:12px 16px;background:#315ee6;color:#fff;font-weight:850;min-height:48px}.btn.alt{background:#eaf0ff;color:#2a52ad}.btn.weak{background:#f0f3f9;color:#45536b}.btn.green{background:#078657}.btn.red{background:#d55252}.btn:active{filter:brightness(.95)}.full{width:100%}.hide{display:none!important}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:750;font-size:14px}.meter{height:9px;background:#e7ebf6;border-radius:20px;overflow:hidden;margin:10px 0}.meter i{display:block;height:100%;background:#527aeb;width:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.stats>div{text-align:center;background:#f1f5fc;padding:8px 2px;border-radius:10px;font-size:12px}.stats strong{display:block;font-size:18px;color:#2e54c1}
+.eq{text-align:center;font-size:clamp(26px,6vw,35px);font-weight:900;margin:15px 0 2px}.eqans{display:inline-flex;align-items:center;justify-content:center;min-width:51px;height:46px;border:2px dashed #aabde9;border-radius:9px;color:#285aca;background:#f6f9ff;vertical-align:middle;padding:0 10px}.eqans.selected{outline:3px solid #f7b64b;background:#fff7e3}
+.guide{padding:13px 10px;border-radius:13px;background:#eaf2ff;border:1px solid #d1e0ff;text-align:center;font-size:17px;font-weight:850;line-height:1.55}
+.board{display:flex;gap:10px;align-items:flex-start;justify-content:center;margin:18px auto 10px;max-width:580px}.leftboard{flex:0 0 auto}
+.positionlabels{display:grid;grid-template-columns:43px 60px 60px;text-align:center;font-weight:750;font-size:12px;color:#677c9f;gap:4px}
+.written{position:relative;display:grid;grid-template-columns:43px 60px 60px;grid-template-rows:64px 64px 64px;gap:4px;padding:5px 0 2px}.written:before{content:"";position:absolute;top:138px;left:3px;width:177px;border-top:3px solid #435672;z-index:1;pointer-events:none}
+.cell{border:2px dashed #a5b6d1;background:#fff;min-width:0;border-radius:10px;font-size:36px;font-weight:900;color:#1f3d71;display:flex;align-items:center;justify-content:center;position:relative}.cell.sign{border:0;background:transparent;font-size:30px;color:#26314d}.cell.empty{border:0;background:transparent}.cell.editable{cursor:pointer}.cell.active,.mini.active{border:3px solid #ec9d24;background:#fff5de}.cell.done{background:#f4f9ff}.cell.answer{color:#1a66c9}
+.written svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:3}.written svg .arrow{stroke:#e47922;stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round}.written svg .circle{stroke:#0b9a74;stroke-width:3.3;fill:none}
+.notes{flex:1;min-width:0;padding-top:20px}.notetitle{font-size:13px;color:#60718c;font-weight:800;margin:0 0 9px}.noterow{display:flex;align-items:center;gap:6px;margin:0 0 10px;min-height:49px}.noterow span{font-size:13px;line-height:1.3;flex:1;font-weight:750}.mini{width:58px;min-width:54px;height:50px;background:#f7f9ff;border:2px dashed #adbde2;border-radius:11px;font-size:27px;font-weight:900;color:#2b55c9}.mini.done{border-style:solid;background:#f2f8ff}.notes-placeholder{font-size:13px;color:#708098;line-height:1.5}
+.actions{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}.actions button{flex:1}.optiongrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.option{border:2px solid #cedaf0;background:white;border-radius:14px;padding:14px 5px;min-height:76px;font-size:18px;font-weight:900;color:#264268}.option.chosen{background:#eaf2ff;border-color:#5e85ed}
+.feedback{min-height:22px;text-align:center;font-size:15px;font-weight:800;margin:10px 0 2px}.feedback.bad{color:#b15c0b}.feedback.ok{color:#078453}.hint{background:#fff8e9;border:1px solid #efd9ac;border-radius:11px;color:#765017;padding:11px;margin:10px 0;font-weight:700;font-size:14px;line-height:1.5}
+.small{font-size:13px;color:#68758c;text-align:center}.summary{text-align:center}.summary b{display:block;font-size:38px;color:#2857cd;margin:15px}.tapTargets{display:flex;justify-content:center;gap:9px;margin:11px 0;flex-wrap:wrap}.tapTargets button{border:2px solid #d5e0f2;border-radius:13px;background:white;padding:9px 12px;font-weight:800}.stepmark{display:inline-block;background:#e6edff;color:#2b54b2;padding:4px 8px;border-radius:9px;font-size:13px;margin-bottom:6px}
+.writehelp{padding:10px 12px;border-radius:12px;background:#f7faff;border:1px solid #d9e5fb;color:#5f6f8c;font-size:13px;line-height:1.5;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(20,29,49,.52);display:flex;align-items:center;justify-content:center;padding:12px;z-index:50}.modalCard{width:min(94vw,470px);background:#fff;border-radius:20px;padding:16px;border:1px solid #d9e2f1;box-shadow:0 12px 36px rgba(0,0,0,.15)}.modalTitle{font-size:20px;font-weight:900;margin:0 0 6px}.modalSub{font-size:13px;color:#62738f;line-height:1.45;margin:0 0 12px}.padWrap{background:#fbfcff;border:2px dashed #c2d2ef;border-radius:16px;padding:10px}.pad{width:100%;height:210px;border-radius:12px;background:#fff;border:1px solid #e0e7f6;touch-action:none}.recognizeBox{margin-top:10px;background:#f3f7ff;border-radius:12px;padding:10px 12px;text-align:center;font-size:14px;font-weight:700;color:#37529c;min-height:48px}.recognizeBox strong{font-size:28px;color:#214dc1;margin-left:8px}.candidateList,.allCandidates{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:8px 0}.candidate{min-width:65px;height:52px;font-size:26px;font-weight:850;color:#284577;border:2px solid #cedbf0;border-radius:12px;background:#fff}.candidate.chosen{border-color:#235fd9;background:#e8f1ff}.allCandidate{width:100%;background:none;border:0;padding:8px;color:#375ba8;font-weight:750;text-decoration:underline}.autoStatus{font-size:13px;color:#546c93;align-self:center;text-align:center;padding:8px;background:#f1f5ff;border-radius:10px}.modalActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.modalActions .wide{grid-column:1/-1}
+@media(max-width:390px){.app{padding:9px}.card{padding:12px}.written{grid-template-columns:34px 49px 49px;grid-template-rows:58px 58px 58px;gap:3px}.positionlabels{grid-template-columns:34px 49px 49px;gap:3px}.cell{font-size:31px}.written:before{top:124px;width:145px}.notes{padding-top:19px}.mini{min-width:46px;width:46px;font-size:25px}.noterow span{font-size:12px}.board{gap:7px}.modalCard{padding:12px}}
+
+/* 세로식과 계산 메모 사이 여백 최소화 */
+.board{position:relative;justify-content:flex-start;gap:2px;max-width:480px;margin:12px auto 8px;overflow:visible}
+.notes{flex:0 1 166px;padding-top:9px;min-width:0}
+.notetitle{font-size:11px;line-height:1.3;margin:0 0 5px}
+.noterow{gap:3px;margin-bottom:5px;min-height:45px}
+.noterow span{font-size:11px;line-height:1.2;flex:1}
+.mini{min-width:43px;width:43px;height:45px;font-size:25px;flex:none}
+.board{position:relative}.shapeCanvas{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:8;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;background:transparent}.shapeCanvas.hide{display:none!important}
+.drawTools{display:flex;align-items:center;justify-content:space-between;gap:7px;border-radius:12px;background:#fff5e8;padding:8px 10px;margin:10px auto;max-width:480px;font-size:13px;font-weight:700;color:#955c17}
+.drawTools .btn{min-height:36px;padding:7px 9px;flex:none;font-size:12px}
+@media(max-width:390px){.board{gap:2px}.notes{flex:1;padding-top:8px}.mini{min-width:38px;width:38px;height:43px}.noterow span{font-size:10px}.notetitle{font-size:10px}}
+
+.keypadModal{max-width:380px}.keyDisplay{text-align:center;font-weight:900;font-size:44px;color:#315ee6;background:#f0f5ff;border-radius:13px;padding:7px;margin-bottom:12px;min-height:72px}.digitKeys{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.digitKeys button{background:#eef3fc;border:1px solid #cbd8ef;border-radius:13px;min-height:62px;font-size:29px;font-weight:900;color:#203969}.digitKeys button:active{background:#cfe0ff}.keypadModal .modalActions{grid-template-columns:1fr 1fr}
+.buddyRule{margin:3px 0 8px;font-size:13px;font-weight:750;color:#22644d;background:#e9f8f0;border:1px solid #bfe9d1;border-radius:10px;padding:9px 8px;line-height:1.6}.buddyRule strong{color:#097341}
+
+/* 전자칠판 전용: 최종 답과 키패드를 학생 영역 하단에 배치 */
+.finalDock{position:fixed;bottom:4px;left:6px;right:6px;z-index:28;padding:9px 10px 11px;border:2px solid #6792ed;border-radius:15px;background:#f0f6ff;box-shadow:0 -4px 18px #263e7633;text-align:center}
+.finalDockLabel{font-size:13px;font-weight:850;color:#2c559f;margin-bottom:5px}
+.finalEquation{display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;font-size:clamp(18px,2.4vw,27px);font-weight:900;margin-bottom:8px;color:#24345c}
+.finalAnswer{min-width:49px;min-height:46px;padding:2px 6px;border:3px dashed #5d88d8;border-radius:10px;background:#fff;color:#2759c9;font-size:29px;font-weight:900}
+.finalDigits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:380px;margin:auto}
+.finalDigits button{min-height:43px;border:1px solid #b9c9e6;background:#fff;border-radius:9px;font-size:23px;font-weight:850;color:#263b65;touch-action:manipulation}
+.finalDigits button:active{background:#cfe0ff}
+.finalDigits button.erase{background:#e6edfa;font-size:14px}
+.finalDock.finished .finalDigits{display:none}
+.finalDock.finished{background:#e4faec;border-color:#45a877}
+body.finalStage main{padding-bottom:300px}
+body.finalStage .app{padding-bottom:320px}
+body.finalStage .eqans{border-style:solid;background:#e6f2ff}
+@media(max-width:275px){.finalDock{padding:7px 5px}.finalDockLabel{font-size:11px}.finalDigits{gap:3px}.finalDigits button{min-height:41px}.finalEquation{font-size:18px}.finalAnswer{font-size:24px;min-height:41px}}
+
+/* 2번 풀이: 아랫수 오른쪽에 짝궁수 입력칸과 힌트 */
+.notes.method-two{padding-top:98px}
+.notes.method-two .notetitle{display:none}
+.buddyInline{display:flex;align-items:center;justify-content:flex-start;gap:5px;margin:0;min-height:45px}
+.buddyInline .mini{flex:none;order:0}
+.buddyInline .buddyHintTag{flex:none;order:1;font-size:12px;line-height:1.1;font-weight:850;color:#516da8;white-space:nowrap}
+@media(max-width:390px){.notes.method-two{padding-top:89px}.buddyInline .buddyHintTag{font-size:10px}}
+
+/* 가운데 세로식, 옆 계산칸: 전자칠판 한 사람 화면 안에서 배치 */
+.board{display:block;position:relative;width:100%;max-width:560px;height:242px;margin:12px auto 8px;overflow:visible}
+.leftboard{position:absolute;left:50%;top:0;transform:translateX(-50%);z-index:1}
+.notes{position:absolute;left:calc(50% + 94px);top:0;width:clamp(86px,28%,175px);padding:0;margin:0;min-width:0}
+.notes .notetitle{display:none}
+.notes .noterow{margin:0;min-height:52px}
+.notes.method-one .noterow{margin-top:24px}
+.notes.method-two .noterow{margin-top:91px}
+.notes.method-one,.notes.method-two{padding-top:0}
+.notes .noterow span{font-weight:800}
+.notes.method-one .noterow{display:flex;gap:5px;align-items:center}
+.notes.method-one .noterow .mini{order:0}
+.notes.method-one .noterow span{order:1;font-size:12px;color:#516da8;line-height:1.3}
+.notes.method-two .buddyInline{display:flex;gap:5px;align-items:center}
+.notes.method-two .buddyHintTag{font-size:12px;color:#516da8}
+.notes .buddyRule{margin:9px 0 0;padding:8px 7px;font-size:11px;line-height:1.45}
+.notes .notes-placeholder{display:none}
+.optiongrid .option.choice-yes{border-color:#39a56f;background:#e9f8ee;color:#14663f}
+.optiongrid .option.choice-no{border-color:#e59a65;background:#fff0e4;color:#924717}
+@media(max-width:410px){
+ .board{height:221px}
+ .leftboard{left:40%}
+ .notes{left:calc(40% + 77px);width:calc(60% - 79px);min-width:87px}
+ .notes.method-one .noterow{margin-top:21px}
+ .notes.method-two .noterow{margin-top:80px}
+ .notes.method-one .noterow span,.notes.method-two .buddyHintTag{font-size:10px}
+ .notes .buddyRule{font-size:10px;padding:6px 5px}
+}
+
+/* 전자칠판: 스크롤 없이 각 영역에 자동 맞춤 / 터치 대상 확대 */
+html,body{width:100%;height:100%;margin:0;overflow:hidden!important;overscroll-behavior:none}
+body{touch-action:pan-x pan-y}
+.app{width:100%;max-width:780px;margin:0 auto;transform-origin:center top;will-change:transform}
+body.finalStage main,body.finalStage .app{padding-bottom:0!important}
+button,select{touch-action:manipulation;-webkit-tap-highlight-color:rgba(49,94,230,.18);user-select:none;-webkit-user-select:none}
+.cell.editable,.mini,.option,.btn,.eqans{min-height:48px}
+.optiongrid .option{min-height:68px}
+.digitKeys button{min-height:65px}
+.shapeCanvas{touch-action:none!important}
+.finalDock{bottom:2px}
+.finalDigits button{min-height:45px}
+@media(max-height:620px){.card{padding:10px;margin:7px 0}.guide{padding:8px}.board{margin:5px auto}.toprow{font-size:13px}}
+
+/* 초등 저학년 전자칠판: 키패드는 학생 영역 아래에 고정 */
+#handModal.modal{align-items:flex-end;justify-content:center;padding:4px 5px max(3px,env(safe-area-inset-bottom));overscroll-behavior:contain}
+#handModal .keypadModal{width:min(100%,420px);max-width:none;margin:0;padding:10px 10px 8px;border-radius:15px 15px 8px 8px;max-height:calc(100dvh - 6px);overflow:hidden}
+#handModal .modalTitle{font-size:16px;margin:0 0 2px}
+#handModal .modalSub{font-size:11px;margin:0 0 5px;line-height:1.2}
+#handModal .keyDisplay{min-height:42px;font-size:30px;padding:2px;margin-bottom:5px}
+#handModal .digitKeys{gap:5px}
+#handModal .digitKeys button{min-height:clamp(39px,8dvh,65px);font-size:clamp(22px,3.5dvh,31px);touch-action:manipulation}
+#handModal .modalActions{gap:5px;margin-top:5px}
+#handModal .modalActions .btn{min-height:36px;padding:6px}
+/* 1번은 화살표 주황, 2번은 동그라미 초록: 글자와 배경 모두 구분 */
+.option.choice-arrow{border:3px solid #eb8530;background:#fff0df;color:#9b4c08}
+.option.choice-circle{border:3px solid #20a471;background:#e6f8ee;color:#116841}
+.option.choice-arrow:active{background:#ffd6b0}
+.option.choice-circle:active{background:#c2f0d8}
+
+/* 단계 안내가 1~여러 줄이 되어도 세로식 시작 위치는 변하지 않습니다. */
+.instructionSlot{height:154px;min-height:154px;max-height:154px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px;overflow:hidden;flex:none}
+.instructionSlot .stepmark{height:27px;min-height:27px;max-height:27px;box-sizing:border-box;align-self:flex-start;display:flex;align-items:center;white-space:nowrap;margin:0;padding:2px 8px;font-size:12px}
+.instructionSlot .guide{height:116px;min-height:116px;max-height:116px;box-sizing:border-box;margin:0;padding:8px 10px;display:flex;align-items:center;justify-content:center;font-size:clamp(12px,2.4vw,17px);line-height:1.35;overflow-wrap:anywhere;overflow:hidden}
+/* 화면 높이별 여백 차이가 세로식 위치를 바꾸지 않도록 고정 */
+.instructionSlot + .board{margin-top:7px!important}
+
+/* 수업 단계 전체에서 세로식의 크기와 위치를 동일하게 유지 */
+.board{height:242px!important;margin:10px auto 5px!important}
+@media(max-width:410px){.board{height:242px!important}.leftboard{left:50%!important}.notes{left:calc(50% + 83px)!important;width:calc(50% - 84px)!important;min-width:0!important}}
+.written{grid-template-columns:43px 60px 60px!important;grid-template-rows:64px 64px 64px!important;gap:4px!important}
+.positionlabels{grid-template-columns:43px 60px 60px!important;gap:4px!important}
+.written:before{top:138px!important;width:177px!important}
+.cell{font-size:36px!important}
+/* 네/아니오 버튼은 세로식 왼쪽과 오른쪽에 고정 */
+.sideChoices{position:absolute;inset:0;pointer-events:none;z-index:9;display:flex;align-items:center;justify-content:space-between;gap:0}
+.sideChoice{pointer-events:auto;width:clamp(48px,23%,130px);min-height:70px;border:3px solid;border-radius:13px;font-weight:900;font-size:clamp(13px,2.8vw,22px);padding:6px 2px;touch-action:manipulation;box-shadow:0 2px 5px #00000012}
+.sideChoice.choice-yes{border-color:#2caa6e;background:#e3f7eb;color:#137345}
+.sideChoice.choice-no{border-color:#ef8f4a;background:#fff0e1;color:#a14b19}
+.compareStage [data-cell=topU],.compareStage [data-cell=botU]{border:3px solid #e69a28!important;background:#fff0c9!important;color:#bd6417!important;box-shadow:0 0 0 2px #fff0a3;z-index:2}
+.compareStage [data-cell=topT]{opacity:.65}
+/* 설명문과 하단 힌트 영역 삭제 */
+.writehelp,#hintBox,#hintBtn{display:none!important}
+/* 최종 답 단계에서는 세로식의 결과를 가리지 않고 위에 따로 보여 줍니다. */
+body.finalStage #game>section:first-child{display:none!important}
+body.finalStage .instructionSlot{display:none!important}
+body.finalStage #game>section:nth-child(2){margin-top:4px!important;padding-top:4px!important}
+body.finalStage .board{margin:4px auto!important}
+body.finalStage #choices,body.finalStage #actions,body.finalStage #feedback,body.finalStage #drawTools{display:none!important}
+body.finalStage .finalDock{bottom:2px;padding:5px 8px 7px}
+body.finalStage .finalDockLabel{font-size:11px;margin-bottom:2px}
+body.finalStage .finalEquation{margin-bottom:4px}
+body.finalStage .finalDigits{gap:3px}
+body.finalStage .finalDigits button{min-height:clamp(35px,6vh,43px)}
+
+
+/* 최종 답 패널은 화면 좌표 기준으로 고정: 세로식 아래쪽을 가리지 않습니다. */
+body.finalStage #finalDock{
+ position:fixed!important;
+ top:auto!important;
+ left:8px!important;
+ right:8px!important;
+ bottom:clamp(22px,11dvh,105px)!important;
+ width:auto!important;
+ margin:0!important;
+ z-index:45!important;
+ transform:none!important;
+}
+@media(max-height:600px){
+ body.finalStage #finalDock{bottom:12px!important;}
+ body.finalStage .finalDigits button{min-height:33px!important;}
+ body.finalStage .finalDock{padding:4px 6px 5px!important;}
+}
+
+
+/* Mobile-first override: full width, no miniature iframe scaling */
+html,body{min-height:100%;height:auto;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;background:#f4f7fc}
+body{touch-action:pan-y}
+.app{width:100%;max-width:540px;padding:7px 9px calc(22px + env(safe-area-inset-bottom));margin:0 auto;transform:none!important;overflow:visible!important}
+header{min-height:46px;gap:8px}
+header h1{font-size:20px;margin:4px 0}
+header .btn{min-height:36px;padding:7px 11px;font-size:13px}
+.card{margin:7px 0;padding:11px;border-radius:15px}
+.toprow{font-size:13px}.meter{margin:6px 0}.stats>div{padding:6px 2px;font-size:11px}.stats strong{font-size:16px}
+.eq{font-size:27px;margin:8px 0 2px}.eqans{min-width:40px;height:40px;font-size:25px}
+.instructionSlot{height:105px;min-height:105px;max-height:105px;gap:4px}
+.instructionSlot .stepmark{height:22px;min-height:22px;font-size:11px}
+.instructionSlot .guide{height:77px;min-height:77px;max-height:77px;font-size:14px;padding:6px 8px;line-height:1.25}
+.board,.instructionSlot + .board{height:238px!important;min-height:238px!important;max-height:238px!important;margin:6px auto 3px!important;max-width:430px}
+.leftboard{left:50%!important;top:0!important;transform:translateX(-50%)!important}
+.written{grid-template-columns:40px 53px 53px!important;grid-template-rows:59px 59px 59px!important;gap:3px!important}
+.positionlabels{grid-template-columns:40px 53px 53px!important;gap:3px!important}
+.written:before{top:127px!important;width:158px!important}
+.cell{font-size:33px!important}
+.notes{left:calc(50% + 73px)!important;right:0!important;width:calc(50% - 74px)!important;padding-top:0!important}
+.notes.method-one .noterow{margin-top:18px!important}
+.notes.method-two .noterow{margin-top:78px!important}
+.notetitle{font-size:10px}.noterow span{font-size:10px}.mini{width:43px;min-width:43px;height:44px;font-size:24px}
+.buddyInline .buddyHintTag{font-size:10px!important;white-space:nowrap}
+.buddyRule{font-size:10px!important;padding:5px 6px!important;line-height:1.35}
+.sideChoices{inset:0 -1px}
+.sideChoice{width:23%;min-height:64px;font-size:clamp(13px,4vw,17px);padding:5px 3px}
+.optiongrid{gap:7px;margin:7px 0}.option{font-size:14px;min-height:63px;padding:8px 4px}
+#actions,.writehelp,#hintBox,#hintBtn{display:none!important}
+.feedback{font-size:12px;min-height:15px;margin:4px 0 0}
+.drawTools{margin:5px auto;font-size:11px;padding:5px 7px}
+#handModal.modal{align-items:flex-end;padding:0 6px calc(6px + env(safe-area-inset-bottom))}
+#handModal .modalCard{width:100%;max-width:520px;border-radius:17px;padding:11px}
+#handModal .digitKeys{gap:5px}
+#handModal .digitKeys button{height:clamp(48px,7.6dvh,67px);min-height:48px;font-size:27px}
+#handModal .keyDisplay{min-height:50px;font-size:30px;padding:4px;margin-bottom:5px}
+#handModal .modalTitle{font-size:15px}#handModal .modalSub{font-size:11px}
+body.finalStage #game>section:nth-child(2){padding-top:6px!important;margin-top:5px!important}
+body.finalStage .board{margin:4px auto 0!important}
+body.finalStage #finalDock{position:fixed!important;top:auto!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;left:8px!important;right:8px!important;width:auto!important;transform:none!important;z-index:40!important;border-radius:16px;padding:8px 9px!important}
+body.finalStage .finalDockLabel{font-size:12px;margin:0 0 4px}
+body.finalStage .finalEquation{font-size:24px;margin-bottom:7px}
+body.finalStage .finalAnswer{font-size:28px;min-height:45px}
+body.finalStage .finalDigits{max-width:440px;gap:5px}
+body.finalStage .finalDigits button{min-height:clamp(42px,7dvh,57px)!important;font-size:24px}
+body.finalStage .finalDigits button.erase{font-size:13px}
+body.finalStage #game{padding-bottom:300px!important}
+body.finalStage .app{padding-bottom:300px!important}
+@media(max-width:350px){.written{grid-template-columns:35px 47px 47px!important;grid-template-rows:54px 54px 54px!important}.positionlabels{grid-template-columns:35px 47px 47px!important}.written:before{top:117px!important;width:141px!important}.cell{font-size:29px!important}.notes{left:calc(50% + 63px)!important;width:calc(50% - 64px)!important}.mini{width:38px;min-width:38px;height:42px}.sideChoice{width:22%;font-size:12px}}
+@media(max-height:700px){.instructionSlot{height:91px;min-height:91px;max-height:91px}.instructionSlot .guide{height:63px;min-height:63px;max-height:63px;font-size:12px}body.finalStage .finalDigits button{min-height:40px!important}body.finalStage #finalDock{padding:5px 8px!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>🧮 십몇 − 몇</h1><button class="btn weak" id="home">처음으로</button></header>
+
+<section class="card" id="setup">
+  <h2>학습 설정</h2>
+  <p class="muted">세로식의 원하는 칸을 누르면 숫자 키패드가 열려요. 세로식과 옆 메모는 문제를 끝낼 때까지 남아 있어요.</p>
+  <div class="setupgrid">
+    <label>문제 수<select id="count"><option>5</option><option>10</option><option>15</option><option value="20" selected>20</option></select></label>
+    <label>문제 종류<select id="kind"><option value="mixed">받아내림 중심 (4:1)</option><option value="borrow">바로 못 빼는 문제</option><option value="direct">바로 빼는 문제</option></select></label>
+    <label>풀이방법<select id="method"><option value="choose">학생이 선택</option><option value="one">1번만</option><option value="two">2번만</option></select></label>
+    <label>힌트<select id="hintPref"><option value="on">표시</option><option value="off">숨기기</option></select></label>
+  </div>
+  <p class="muted">받아내림 중심: 5문제 중 4문제 받아내림 · 시간제한 없음 · 첫 실수 재도전 · 키패드 입력</p>
+  <button id="start" class="btn full">학습 시작 ▶</button>
+</section>
+
+<main id="game" class="hide">
+  <section class="card">
+    <div class="toprow"><span id="countText">1 / 20문제</span><span id="clock">⏱ 00:00</span></div>
+    <div class="meter"><i id="meter"></i></div>
+    <div class="stats"><div>맞힌 문제<strong id="wins">0</strong></div><div>실수<strong id="errs">0</strong></div><div>풀이방법<strong id="modeShow">—</strong></div></div>
+    <div class="eq"><span id="eqLeft"></span> = <span class="eqans" id="eqAnswer" aria-label="상단 문제 표시">?</span></div>
+  </section>
+
+  <section class="card">
+    <div class="instructionSlot">
+      <div id="stepmark" class="stepmark">1단계</div>
+      <div class="guide" id="guide"></div>
+    </div>
+    <div class="board" id="mathBoard">
+      <div class="leftboard">
+        <div class="positionlabels"><span></span><span>십의 자리</span><span>일의 자리</span></div>
+        <div class="written" id="written">
+          <div class="cell empty"></div>
+          <button class="cell editable" data-cell="topT"> </button>
+          <button class="cell editable" data-cell="topU"> </button>
+          <div class="cell sign">−</div>
+          <button class="cell editable" data-cell="botT"> </button>
+          <button class="cell editable" data-cell="botU"> </button>
+          <div class="cell empty"></div>
+          <button class="cell editable answer" data-cell="ansT"> </button>
+          <button class="cell editable answer" data-cell="ansU"> </button>
+          <svg class="hide" viewBox="0 0 191 206" preserveAspectRatio="none" aria-hidden="true">
+            <defs><marker id="arrowhead" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0 0 L4 2 L0 4" fill="none" stroke="#e47922" stroke-width="1"/></marker></defs>
+            <path id="drawArrow" class="arrow" d="M172 101 C211 74 205 22 168 30" marker-end="url(#arrowhead)" style="display:none"/>
+            <ellipse id="drawCircle" class="circle" cx="166" cy="72" rx="24" ry="83" style="display:none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="notes">
+        <p class="notetitle">✏️ 계산 메모</p>
+        <div id="notesRows"></div><p id="buddyRule" class="buddyRule hide">💡 거꾸로 뺀 수의 <strong>10짝궁수가 정답이에요!</strong><br>그 짝궁수를 세로식 답 칸에 써요.</p>
+        <p id="notesEmpty" class="notes-placeholder">풀이방법을 선택하면 이곳에 계산 메모 칸이 나타나요.</p>
+      </div>
+      <div id="sideChoices" class="sideChoices hide" aria-label="일의 자리 비교"></div>
+      <canvas id="shapeCanvas" class="shapeCanvas hide" aria-label="세로식 위에 직접 화살표 또는 동그라미 그리기"></canvas>
+    </div>
+    <div class="drawTools hide" id="drawTools"><span id="drawPrompt">화살표를 그려 보세요.</span><button class="btn weak" id="drawErase" type="button">다시 그리기</button></div>
+    <div id="choices" class="optiongrid hide"></div>
+    <div id="tapTargets" class="tapTargets hide"></div>
+    <div class="actions" id="actions"><button id="check" class="btn">확인하기</button></div>
+
+    <p id="feedback" class="feedback" aria-live="polite"></p>
+
+  </section>
+</main>
+
+<!-- 마지막 가로식 답 입력: 학생 손이 닿는 화면 하단에 고정 -->
+<section id="finalDock" class="finalDock hide" aria-label="마지막 가로식 답 입력">
+  <div class="finalDockLabel">마지막으로 가로식의 답을 써요</div>
+  <div class="finalEquation"><span id="finalLeft"></span> = <button type="button" id="finalAnswer" class="finalAnswer" aria-label="가로식 정답">?</button></div>
+  <div class="finalDigits" id="finalDigits"></div>
+</section>
+
+<section id="end" class="card summary hide"><h2>🎉 학습을 마쳤어요!</h2><b id="result"></b><p id="resultDetail"></p><button class="btn full" id="again">다시 학습하기</button></section>
+</div>
+
+<div id="handModal" class="modal hide" aria-modal="true" role="dialog">
+  <div class="modalCard keypadModal">
+    <p class="modalTitle" id="modalTitle">숫자 입력</p>
+    <p class="modalSub" id="modalSub">숫자를 눌러 주세요.</p>
+    <div class="keyDisplay" id="keyDisplay">?</div>
+    <div class="digitKeys" id="digitKeys"></div>
+    <div class="modalActions">
+      <button class="btn weak" id="keyErase" type="button">⌫ 지우기</button>
+      <button class="btn weak" id="padCancel" type="button">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+// 최종 답 패널을 확대/축소되는 학습판 밖으로 이동하여 실제 화면 아래쪽에 고정합니다.
+document.body.appendChild($('finalDock'));
+const set=(id,html)=>$(id).innerHTML=html;
+const cellKeys=['topT','topU','botT','botU','ansT','ansU'];
+let S=null, interval=null, target=null;
+let values={};
+function clearValues(){values={topT:'',topU:'',botT:'',botU:'',ansT:'',ansU:'',note1:'',note2:'',horizontal:''};target=null}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function makeProblem(){
+  const selectedKind=$('kind').value;
+  const kind=selectedKind==='mixed'?S.problemKinds[S.index]:selectedKind;
+  let a,b,borrow,attempts=0;
+  do {
+    a=rand(11,19); b=rand(1,9); borrow=(a%10)<b;
+    attempts++;
+  } while ((kind==='borrow'&&!borrow || kind==='direct'&&borrow || S.usedProblems.has(a+'-'+b)) && attempts<300);
+  S.usedProblems.add(a+'-'+b);
+  return {a,b,borrow,answer:a-b};
+}
+function makeProblemKinds(total){
+  const kinds=[];
+  for(let i=0;i<total;i+=5){
+    const block=['borrow','borrow','borrow','borrow','direct'];
+    for(let j=block.length-1;j>0;j--){const k=rand(0,j);[block[j],block[k]]=[block[k],block[j]]}
+    kinds.push(...block);
+  }
+  return kinds;
+}
+function timeString(sec){const m=String(Math.floor(sec/60)).padStart(2,'0');const s=String(sec%60).padStart(2,'0');return `${m}:${s}`}
+function goHome(){document.body.classList.remove('finalStage');$('finalDock').classList.add('hide');clearShape();if(interval) clearInterval(interval); interval=null; S=null; $('setup').classList.remove('hide'); $('game').classList.add('hide'); $('end').classList.add('hide'); $('handModal').classList.add('hide'); clearValues()}
+function start(){clearValues();S={total:+$('count').value,index:0,wins:0,errs:0,start:Date.now(),p:null,step:'build',method:null,tries:0,attempted:false,arrowPicks:[],circlePicks:[],problemKinds:makeProblemKinds(+$('count').value),usedProblems:new Set()};$('setup').classList.add('hide');$('game').classList.remove('hide');$('end').classList.add('hide');interval=setInterval(()=>{if(S)set('clock','⏱ '+timeString(Math.floor((Date.now()-S.start)/1000)))},1000);next()}
+function next(){clearShape();clearValues();S.p=makeProblem();S.step='build';S.method=null;S.tries=0;S.attempted=false;S.arrowPicks=[];S.circlePicks=[];set('eqLeft',S.p.a+' − '+S.p.b);$('drawArrow').style.display='none';$('drawCircle').style.display='none';show()}
+const calcNotes=()=>S.method==='one'?[['note1','거꾸로 뺀 수']]:S.method==='two'?[['note1','아랫수의 10짝궁수']]:[];
+function activate(key){target=key;paint()}
+function paint(){
+  for(const key of cellKeys){
+    let e=document.querySelector('[data-cell="'+key+'"]');
+    e.textContent=values[key]||' ';
+    e.classList.toggle('active',target===key); e.classList.toggle('done',!!values[key]);
+    e.disabled=!((S.step==='build'&&['topT','topU','botT','botU'].includes(key)) || (S.step==='answer'&&['ansT','ansU'].includes(key)));
+  }
+  for(const key of ['note1','note2']){const e=document.querySelector('[data-note="'+key+'"]'); if(e){e.textContent=values[key]||' '; e.classList.toggle('active',target===key); e.classList.toggle('done',!!values[key]); e.disabled=!(S.step==='note1'&&key==='note1'||S.step==='note2'&&key==='note2')}}
+  $('eqAnswer').textContent=values.horizontal||'?'; $('eqAnswer').classList.remove('selected');
+  $('drawArrow').style.display=S.arrowPicks.length===2?'':'none'; $('drawCircle').style.display=S.circlePicks.length===2?'':'none';
+}
+function setStep(step){clearTimeout(autoProgressTimer);S.step=step;S.tries=0;S.attempted=false;target=null;set('feedback','');$('feedback').className='feedback';show()}
+function show(){
+  set('countText',(S.index+1)+' / '+S.total+'문제'); set('wins',S.wins); set('errs',S.errs); set('modeShow',S.method?(S.method==='one'?'1번':'2번'):'—'); $('meter').style.width=(S.index/S.total*100)+'%';
+  const rows=calcNotes();
+  $('notesRows').innerHTML=rows.map(([key,label])=>{
+    if(S.method==='two' && key==='note1') return `<div class="noterow buddyInline"><button class="mini" type="button" data-note="${key}" aria-label="${label} 입력"></button><span class="buddyHintTag">10짝궁수</span></div>`;
+    return `<div class="noterow"><span>${label}</span><button class="mini" type="button" data-note="${key}" aria-label="${label} 입력"></button></div>`;
+  }).join('');
+  $('notesEmpty').classList.toggle('hide',rows.length>0);
+  $('buddyRule').classList.toggle('hide',S.method!=='one');
+  $('mathBoard').querySelector('.notes').classList.toggle('method-two',S.method==='two');
+  $('mathBoard').querySelector('.notes').classList.toggle('method-one',S.method==='one');
+  document.querySelectorAll('[data-note]').forEach(e=>e.onclick=()=>openPad(e.dataset.note));
+  $('choices').classList.add('hide'); $('sideChoices').classList.add('hide'); $('sideChoices').innerHTML=''; document.body.classList.toggle('compareStage',S.step==='compare'); $('tapTargets').classList.add('hide'); $('check').classList.add('hide');  $('check').textContent='확인하기'; $('check').classList.add('hide');
+  const n=S.p.a%10,b=S.p.b;
+  const cfg={
+    build:['1단계','원하는 칸을 눌러 키패드로 세로식을 완성해요. 맞으면 자동 진행해요.'],
+    compare:['2단계',`${n}에서 ${b}를 바로 뺄 수 있을까요?`],
+    method:['3단계','바로 뺄 수 없어요. 어떤 방법으로 풀까요?'],
+    arrow:['4단계 · 거꾸로 풀기','세로식의 아랫숫자에서 윗숫자 일의 자리로 화살표를 그려요.'],
+    circle:['4단계 · 짝궁수 이용하기','세로식의 윗숫자 일의 자리와 오른쪽 짝궁수 칸을 함께 감싸 동그라미를 그려요.'],
+    note1:['계산 메모 ①',S.method==='one'?`${b} − ${n}의 결과를 오른쪽 메모 칸에 써요.`:`${b}의 10짝궁수를 오른쪽 메모 칸에 써요.`],
+    note2:['계산 메모 ②',S.method==='one'?'거꾸로 뺀 수의 10짝궁수를 세로식 답 칸에 바로 써요.':'윗숫자 일의 자리와 짝궁수를 더한 값을 세로식 답 칸에 바로 써요.'],
+    answer:['세로식 답','계산한 결과를 세로식의 답 칸에 바로 써요.'],
+    horizontal:['가로식 답','화면 아래에 있는 답칸과 키패드로 가로식을 완성해요.'],
+    finish:['정답!','잘했어요! 다음 문제로 넘어가요.']
+  };
+  set('stepmark',cfg[S.step][0]); set('guide',cfg[S.step][1]);
+  if(S.step==='compare'){sideChoices()}
+  if(S.step==='method'){const preferred=$('method').value; if(preferred==='choose'){choices([['one','1번 · 거꾸로 풀기 (화살표)'],['two','2번 · 짝궁수 구하기 (동그라미)']])} else {selectMethod(preferred); return;}}
+  updateShapeMode();
+  if(S.step==='build'){$('check').classList.add('hide');}
+  if(S.step==='finish'){ setTimeout(()=>{if(S && S.step==='finish'){S.index++;if(S.index===S.total)finish();else next()}},850)}
+  syncFinalDock();
+  paint();
+}
+function sideChoices(){
+ const host=$('sideChoices');host.classList.remove('hide');host.innerHTML='';
+ [['yes','네','네, 바로 뺄 수 있어요'],['no','아니요','아니요, 바로 못 빼요']].forEach(([value,label,aria])=>{
+   const b=document.createElement('button');b.type='button';b.className='sideChoice '+(value==='yes'?'choice-yes':'choice-no');
+   b.textContent=label;b.setAttribute('aria-label',aria);b.onclick=()=>choose(value);host.appendChild(b);
+ });
+}
+function choices(arr){$('choices').classList.remove('hide'); $('check').classList.add('hide'); $('choices').innerHTML=''; arr.forEach(([val,label])=>{let btn=document.createElement('button'); btn.className='option'+(S.step==='compare'?(val==='yes'?' choice-yes':' choice-no'):S.step==='method'?(val==='one'?' choice-arrow':' choice-circle'):''); btn.textContent=label; btn.onclick=()=>choose(val); $('choices').appendChild(btn)})}
+function pickButtons(arr){$('tapTargets').classList.remove('hide'); $('check').classList.add('hide'); $('tapTargets').innerHTML=''; arr.forEach(([val,label])=>{const btn=document.createElement('button'); btn.textContent=label; btn.onclick=()=>pick(val); $('tapTargets').appendChild(btn)})}
+function markBad(msg){S.errs++; set('errs',S.errs); S.tries++; const f=$('feedback'); f.textContent=msg+(S.tries===1?' 한 번 더 해 보세요!':' 다시 살펴보고 고쳐 보세요.'); f.className='feedback bad'}
+function markGood(msg){const f=$('feedback'); f.textContent=msg; f.className='feedback ok'}
+function choose(val){if(S.step==='compare'){const correct=S.p.borrow?'no':'yes'; if(val!==correct){markBad('일의 자리를 다시 비교해요.'); return} if(val==='yes')setStep('answer'); else setStep('method')} else if(S.step==='method')selectMethod(val)}
+function selectMethod(val){S.method=val; if(val==='one')setStep('arrow'); else setStep('note1')}
+function pick(val){const arr=S.step==='arrow'?S.arrowPicks:S.circlePicks; const expected=S.step==='arrow'?['bottom','top']:['top','buddy']; if(val!==expected[arr.length]){markBad('누르는 순서를 다시 확인해요.'); return} arr.push(val); show(); if(arr.length===2){markGood(S.step==='arrow'?'화살표를 잘 그렸어요!':'두 수를 동그라미로 잘 묶었어요!'); $('tapTargets').classList.add('hide'); $('check').classList.add('hide'); $('check').textContent='다음 단계 ▶'}}
+function numberOf(hi,lo){if(!values[lo])return null; return (values[hi]?+values[hi]*10:0)+(+values[lo])}
+function check(){const p=S.p,n=p.a%10,b=p.b;
+  if(S.step==='build'){const a=numberOf('topT','topU'); const lower=numberOf('botT','botU'); if(a===null||lower===null){markBad('숫자를 쓸 칸을 확인해요.'); return} if(a!==p.a||lower!==b||values.botT){markBad('가로식을 보고 각 숫자의 자리를 확인해요.'); return} setStep('compare'); return}
+  if(S.step==='arrow'||S.step==='circle'){const ready=S.step==='arrow'?S.arrowPicks.length===2:S.circlePicks.length===2; if(!ready){markBad('먼저 표시를 완성해요.'); return} setStep(S.step==='arrow'?'note1':'answer'); return}
+  if(S.step==='note1'||S.step==='note2'){const desired=S.step==='note1'?(S.method==='one'?b-n:10-b):(S.method==='one'?10-(b-n):n+(10-b)); const key=S.step; if(values[key]===''||+values[key]!==desired){markBad('오른쪽 메모 칸의 계산을 다시 해 보세요.'); return} setStep(S.step==='note1'?(S.method==='one'?'answer':'circle'):'answer'); return}
+  if(S.step==='answer'){const a=numberOf('ansT','ansU'); if(a!==p.answer||(p.answer<10&&values.ansT!=='')){markBad('세로식의 답을 다시 계산해 보세요.'); return} setStep('horizontal'); return}
+  if(S.step==='horizontal'){if(values.horizontal===''||+values.horizontal!==p.answer){markBad('가로식의 답을 확인해요.'); return} S.wins++; setStep('finish'); return}
+  if(S.step==='finish'){S.index++; if(S.index===S.total)finish(); else next()}
+}
+function hint(){let t=''; const p=S.p,n=p.a%10,b=p.b; switch(S.step){case'build':t=`윗줄에는 ${p.a}를, 아랫줄 일의 자리에는 ${b}를 적어요.`;break; case'compare':t=`${n}와 ${b}를 비교해요. ${n}이 ${b}보다 작으면 바로 뺄 수 없어요.`;break; case'method':t='1번은 아래 수에서 위 일의 자리를 거꾸로 빼요. 2번은 아랫수의 10짝궁수를 이용해요.';break; case'arrow':t=`아랫숫자 ${b}에서 윗숫자 ${n} 방향으로 선을 그려요.`;break; case'note1':t=S.method==='one'?`${b}에서 ${n}을 빼는 계산이에요.`:`${b}에 몇을 더하면 10이 될까요?`;break; case'circle':t=`일의 자리 ${n}과 짝궁수 ${values.note1}을 둘러싸세요.`;break; case'note2':t=S.method==='one'?`${values.note1}에 몇을 더해야 10일까요?`:`${n}과 ${values.note1}을 더해요.`;break; case'answer':t=S.method==='one'?'거꾸로 뺀 수의 10짝궁수를 세로식 답 칸에 써요.':S.method==='two'?'윗숫자 일의 자리와 짝궁수를 더한 수를 답 칸에 써요.':'일의 자리끼리 바로 빼서 답을 써요.';break; case'horizontal':t='세로식의 답을 가로식에도 똑같이 써요.';break; default:t='차근차근 해 보세요.'} }
+function finish(){$('finalDock').classList.add('hide');document.body.classList.remove('finalStage');if(interval)clearInterval(interval); interval=null; $('game').classList.add('hide'); $('end').classList.remove('hide'); set('result',S.wins+' / '+S.total+'문제'); set('resultDetail',`실수 ${S.errs}번 · 풀이 시간 ${timeString(Math.floor((Date.now()-S.start)/1000))}`)}
+
+// 최종 가로식 답 입력은 팝업 없이 하단 키패드에서 처리
+function syncFinalDock(){
+ const visible=!!S && (S.step==='horizontal'||S.step==='finish');
+ $('finalDock').classList.toggle('hide',!visible);
+ document.body.classList.toggle('finalStage',visible);
+ $('finalDock').classList.toggle('finished',!!S&&S.step==='finish');
+ if(!visible)return;
+ $('finalLeft').textContent=S.p.a+' − '+S.p.b;
+ $('finalAnswer').textContent=values.horizontal||'?';
+ $('finalAnswer').disabled=S.step!=='horizontal';
+ document.querySelectorAll('#finalDigits button').forEach(x=>x.disabled=S.step!=='horizontal');
+}
+function finalDigit(digit){
+ if(!S||S.step!=='horizontal')return;
+ const next=(values.horizontal+digit).slice(-2);
+ values.horizontal=next;
+ $('finalAnswer').textContent=next;
+ paint();
+ if(Number(next)===S.p.answer && next!==''){
+   autoAdvanceInput('horizontal');
+ }else if(next.length>=2){
+   values.horizontal='';$('finalAnswer').textContent='?';paint();
+   set('feedback','다시 계산해 보세요.');$('feedback').className='feedback bad';
+ }
+}
+(function setupFinalDigits(){
+ const host=$('finalDigits');
+ for(const d of ['1','2','3','4','5','6','7','8','9','지우기','0','전체삭제']){
+   const b=document.createElement('button');b.type='button';b.textContent=d;
+   if(d==='지우기'||d==='전체삭제') b.className='erase';
+   b.onclick=()=>{if(!S||S.step!=='horizontal')return;
+     if(d==='지우기')values.horizontal=values.horizontal.slice(0,-1);
+     else if(d==='전체삭제')values.horizontal='';
+     else {finalDigit(d);return}
+     $('finalAnswer').textContent=values.horizontal||'?';paint();
+   };host.appendChild(b)
+ }
+})();
+$('finalAnswer').onclick=()=>{if(S&&S.step==='horizontal'){values.horizontal='';$('finalAnswer').textContent='?';paint()}};
+
+// ---------- 화면 키패드 입력 ----------
+let keypadTarget=null;
+const digitKeys=$('digitKeys');
+for(const digit of ['1','2','3','4','5','6','7','8','9','','0','']){
+  const btn=document.createElement('button');
+  if(digit){btn.textContent=digit;btn.type='button';btn.onclick=()=>inputDigit(digit);}else{btn.disabled=true;btn.style.visibility='hidden';}
+  digitKeys.appendChild(btn);
+}
+function validTarget(key){return S && ((S.step==='build'&&['topT','topU','botT','botU'].includes(key)) ||(S.step==='answer'&&['ansT','ansU'].includes(key))||(S.step==='note1'&&key==='note1')||(S.step==='horizontal'&&key==='horizontal'));}
+function openPad(key){
+ if(!validTarget(key))return;
+ keypadTarget=key;target=key;
+ const names={topT:'윗줄 십의 자리',topU:'윗줄 일의 자리',botT:'아랫줄 십의 자리',botU:'아랫줄 일의 자리',ansT:'답의 십의 자리',ansU:'답의 일의 자리',note1:'계산 메모',horizontal:'가로식 답'};
+ $('modalTitle').textContent='숫자 입력';$('modalSub').textContent=names[key]+'에 쓸 숫자를 눌러 주세요.';
+ $('handModal').classList.remove('hide');
+ $('keyDisplay').textContent=values[key]||'?';paint();
+}
+function closePad(){ $('handModal').classList.add('hide'); keypadTarget=null; }
+function inputDigit(digit){
+ const key=keypadTarget;if(!validTarget(key))return;
+ const isWhole=key==='horizontal';
+ values[key]=isWhole?(values[key]+digit).slice(0,2):digit;
+ $('keyDisplay').textContent=values[key];paint();
+ if(!isWhole || values[key].length>=2 || Number(values[key])===S.p.answer){
+   closePad();autoAdvanceBuild();autoAdvanceInput(key);
+ }
+}
+$('keyErase').onclick=()=>{
+ if(!keypadTarget)return;
+ values[keypadTarget]='';$('keyDisplay').textContent='?';paint();
+};
+$('padCancel').onclick=closePad;
+function autoAdvanceBuild(){
+ if(!S||S.step!=='build')return;
+ const p=S.p;
+ if(values.topT==='1'&&values.topU===String(p.a%10)&&values.botU===String(p.b)&&values.botT==='')setStep('compare');
+ else if(['topT','topU','botU'].every(k=>values[k]!=='')){
+  set('feedback','자리와 숫자를 다시 확인해요.');$('feedback').className='feedback bad';
+ }
+}
+
+// 자동 진행: 입력한 칸의 값이 맞으면 즉시 다음 단계로 이동합니다.
+let autoProgressTimer=null;
+function autoAdvanceInput(key){
+  if(!S || S.step==='build')return;
+  const p=S.p, n=p.a%10, b=p.b;
+  let correct=false, nextStep='';
+  if(S.step==='note1'&&key==='note1'){
+    correct=values.note1!=='' && +values.note1===(S.method==='one'?b-n:10-b);
+    nextStep=S.method==='one'?'answer':'circle';
+  }else if(S.step==='note2'&&key==='note2'){
+    correct=values.note2!=='' && +values.note2===(S.method==='one'?10-(b-n):n+10-b);
+    nextStep='answer';
+  }else if(S.step==='answer'&&['ansT','ansU'].includes(key)){
+    correct=numberOf('ansT','ansU')===p.answer && (p.answer>=10? values.ansT!=='':values.ansT==='');
+    nextStep='horizontal';
+  }else if(S.step==='horizontal'&&key==='horizontal'){
+    correct=values.horizontal!==''&&+values.horizontal===p.answer;
+    nextStep='finish';
+  }
+  if(correct){
+    clearTimeout(autoProgressTimer);
+    autoProgressTimer=setTimeout(()=>{
+      if(!S||S.step===nextStep)return;
+      if(nextStep==='finish')S.wins++;
+      setStep(nextStep);
+    },380);
+  }
+}
+
+// 세로식 내부에서 직접 그리기. 그린 선은 문제 끝까지 유지됩니다.
+const shapeCanvas=$('shapeCanvas'), shapeCtx=shapeCanvas.getContext('2d');
+let shapeDrawing=false,shapePoints=[],shapeSaved=[];
+function clearShape(){shapeSaved=[];shapePoints=[];shapeDrawing=false; if(shapeCanvas)shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height)}
+function elementCenter(el){if(!el)return {x:-999,y:-999};const a=el.getBoundingClientRect(),b=shapeCanvas.getBoundingClientRect();return {x:(a.left+a.width/2-b.left)*shapeCanvas.width/Math.max(1,b.width),y:(a.top+a.height/2-b.top)*shapeCanvas.height/Math.max(1,b.height)}}
+function mapShape(e){const a=shapeCanvas.getBoundingClientRect();return {x:(e.clientX-a.left)*shapeCanvas.width/Math.max(1,a.width),y:(e.clientY-a.top)*shapeCanvas.height/Math.max(1,a.height)}}
+function resizeShape(){const box=$('mathBoard');const w=Math.max(1,box.offsetWidth),h=Math.max(1,box.offsetHeight);if(shapeCanvas.width!==Math.round(w)||shapeCanvas.height!==Math.round(h)){shapeCanvas.width=Math.round(w);shapeCanvas.height=Math.round(h);redrawShape()}}
+function strokeLine(points,color){if(points.length<2)return;shapeCtx.strokeStyle=color;shapeCtx.lineWidth=4;shapeCtx.lineJoin='round';shapeCtx.lineCap='round';shapeCtx.beginPath();shapeCtx.moveTo(points[0].x,points[0].y);for(const pt of points.slice(1))shapeCtx.lineTo(pt.x,pt.y);shapeCtx.stroke()}
+function redrawShape(){shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);for(const s of shapeSaved)strokeLine(s.points,s.color); if(shapePoints.length)strokeLine(shapePoints,S?.step==='circle'?'#07936d':'#e47922')}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function updateShapeMode(){
+  const active=S && (S.step==='arrow'||S.step==='circle');
+  $('drawTools').classList.toggle('hide',!active);shapeCanvas.classList.toggle('hide',!active && shapeSaved.length===0);shapeCanvas.style.pointerEvents=active?'auto':'none';
+  if(active){$('drawPrompt').textContent=S.step==='arrow'?'9처럼 아랫숫자에서 4처럼 윗숫자로 화살표를 그려요.':'윗숫자와 오른쪽 짝궁수를 함께 동그라미로 묶어요.';requestAnimationFrame(resizeShape)}else if(shapeSaved.length){requestAnimationFrame(resizeShape)}
+}
+shapeCanvas.addEventListener('pointerdown',e=>{if(!S||!['arrow','circle'].includes(S.step))return; e.preventDefault();resizeShape();shapeDrawing=true;shapePoints=[mapShape(e)];redrawShape();shapeCanvas.setPointerCapture?.(e.pointerId)});
+shapeCanvas.addEventListener('pointermove',e=>{if(!shapeDrawing)return;e.preventDefault();const p=mapShape(e);if(dist(p,shapePoints[shapePoints.length-1])>2){shapePoints.push(p);redrawShape()}});
+function completeShape(e){if(!shapeDrawing||!S)return; shapeDrawing=false; shapePoints.push(mapShape(e));const pts=shapePoints.slice();shapePoints=[];
+  if(pts.length<2 || dist(pts[0],pts[pts.length-1])<9){redrawShape();return}
+  let ok=false;
+  if(S.step==='arrow'){
+    const bottom=elementCenter(document.querySelector('[data-cell="botU"]'));
+    const top=elementCenter(document.querySelector('[data-cell="topU"]'));
+    // 시작점은 아래 수 근처, 끝점은 위 수 근처. 넉넉하게 허용합니다.
+    const first=pts[0],last=pts[pts.length-1];
+    ok=dist(first,bottom)<140 && dist(last,top)<140 && last.y<first.y-10;
+  }else if(S.step==='circle'){
+    const top=elementCenter(document.querySelector('[data-cell="topU"]'));
+    const note=elementCenter(document.querySelector('[data-note="note1"]'));
+    const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+    const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+    const first=pts[0],last=pts[pts.length-1];
+    const encloses=(pt)=>pt.x>=minX-17&&pt.x<=maxX+17&&pt.y>=minY-19&&pt.y<=maxY+19;
+    const length=pts.slice(1).reduce((sum,p,i)=>sum+dist(p,pts[i]),0);
+    ok=encloses(top)&&encloses(note)&&maxX-minX>30&&maxY-minY>22&&length>85&&dist(first,last)<160;
+  }
+  if(ok){shapeSaved.push({points:pts,color:S.step==='circle'?'#07936d':'#e47922'});redrawShape();
+    if(S.step==='arrow')S.arrowPicks=['bottom','top'];else S.circlePicks=['top','buddy'];
+    const nextStep=S.step==='arrow'?'note1':'answer';markGood('잘 그렸어요!');
+    setTimeout(()=>{if(S&&(S.step==='arrow'||S.step==='circle'))setStep(nextStep)},420);
+  }else{redrawShape();set('feedback',S.step==='arrow'?'아랫숫자에서 윗숫자로 다시 그려 보세요.':'윗숫자와 오른쪽 짝궁수를 크게 둘러싸 보세요.');$('feedback').className='feedback bad'}
+}
+shapeCanvas.addEventListener('pointerup',completeShape);shapeCanvas.addEventListener('pointercancel',()=>{shapeDrawing=false;shapePoints=[];redrawShape()});
+$('drawErase').onclick=()=>{shapeSaved=[];shapePoints=[];redrawShape();set('feedback','다시 그려 보세요.');};
+window.addEventListener('resize',()=>{if(S&&['arrow','circle'].includes(S.step))resizeShape()});
+
+
+// UI events
+ document.querySelectorAll('[data-cell]').forEach(el=>el.onclick=()=>openPad(el.dataset.cell));
+ // 상단 가로식은 문제 제시 전용
+ $('check').onclick=check;  $('start').onclick=start; $('home').onclick=goHome; $('again').onclick=()=>{goHome();start()};
+ window.addEventListener('keydown',e=>{ if(S&&S.step==='horizontal'&&$('handModal').classList.contains('hide')&&/^[0-9]$/.test(e.key)){finalDigit(e.key);return;} if(e.key==='Escape')closePad(); if(!$('handModal').classList.contains('hide') && /^[0-9]$/.test(e.key)){inputDigit(e.key);return;} if(!$('handModal').classList.contains('hide')&& e.key==='Backspace'){$('keyErase').click();} });
+})();
+</script>
+</body>
+</html>
