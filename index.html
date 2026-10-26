@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>십몇 − 몇 | 모바일 1인 학습</title>
+<title>2026. 1학년 수학 교실 | 문제풀이</title>
 <style>
 :root{font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#24314b;background:#f5f7fc}
 *{box-sizing:border-box}body{margin:0}button,select{font:inherit}button{touch-action:manipulation;cursor:pointer}button:disabled{opacity:.45;cursor:default}
@@ -239,13 +239,13 @@ body.finalStage .app{padding-bottom:300px!important}
 </head>
 <body>
 <div class="app">
-<header><h1>🧮 십몇 − 몇</h1><button class="btn weak" id="home">처음으로</button></header>
+<header><h1>🧮 2026. 1학년 수학 교실</h1><button class="btn weak" id="home">처음으로</button></header>
 
 <section class="card" id="setup">
   <h2>학습 설정</h2>
-  <p class="muted">세로식의 원하는 칸을 누르면 숫자 키패드가 열려요. 세로식과 옆 메모는 문제를 끝낼 때까지 남아 있어요.</p>
+  <p class="muted">로그인 없이 바로 학습할 수 있어요. 세로식 칸을 누르면 숫자 키패드가 열려요.</p>
   <div class="setupgrid">
-    <label>문제 수<select id="count"><option>5</option><option>10</option><option>15</option><option value="20" selected>20</option></select></label>
+    <label>문제 수<select id="count"><option>5</option><option selected>10</option><option>15</option><option value="20">20</option></select></label>
     <label>문제 종류<select id="kind"><option value="mixed">받아내림 중심 (4:1)</option><option value="borrow">바로 못 빼는 문제</option><option value="direct">바로 빼는 문제</option></select></label>
     <label>풀이방법<select id="method"><option value="choose">학생이 선택</option><option value="one">1번만</option><option value="two">2번만</option></select></label>
     <label>힌트<select id="hintPref"><option value="on">표시</option><option value="off">숨기기</option></select></label>
@@ -256,7 +256,7 @@ body.finalStage .app{padding-bottom:300px!important}
 
 <main id="game" class="hide">
   <section class="card">
-    <div class="toprow"><span id="countText">1 / 20문제</span><span id="clock">⏱ 00:00</span></div>
+    <div class="toprow"><span id="countText">1 / 10문제</span><span id="clock">⏱ 00:00</span></div>
     <div class="meter"><i id="meter"></i></div>
     <div class="stats"><div>맞힌 문제<strong id="wins">0</strong></div><div>실수<strong id="errs">0</strong></div><div>풀이방법<strong id="modeShow">—</strong></div></div>
     <div class="eq"><span id="eqLeft"></span> = <span class="eqans" id="eqAnswer" aria-label="상단 문제 표시">?</span></div>
@@ -280,8 +280,14 @@ body.finalStage .app{padding-bottom:300px!important}
           <div class="cell empty"></div>
           <button class="cell editable answer" data-cell="ansT"> </button>
           <button class="cell editable answer" data-cell="ansU"> </button>
-          <svg class="hide" viewBox="0 0 191 206" preserveAspectRatio="none" aria-hidden="true">
-            <defs><marker id="arrowhead" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0 0 L4 2 L0 4" fill="none" stroke="#e47922" stroke-width="1"/></marker></defs>
+          <svg id="compareSvg" viewBox="0 0 191 206" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0 0 L4 2 L0 4" fill="none" stroke="#e47922" stroke-width="1"/></marker>
+              <marker id="blueArrowhead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0 0 L5 2.5 L0 5" fill="none" stroke="#2f73ff" stroke-width="1.2"/></marker>
+            </defs>
+            <line id="compareSlash" x1="28" y1="56" x2="72" y2="12" stroke="#ef3b3b" stroke-width="4" stroke-linecap="round" style="display:none"/>
+            <ellipse id="compareCircle" cx="52" cy="30" rx="18" ry="20" stroke="#ef3b3b" stroke-width="3.5" fill="none" style="display:none"/>
+            <line id="compareDownArrow" x1="52" y1="50" x2="52" y2="144" stroke="#ef3b3b" stroke-width="4" stroke-linecap="round" marker-end="url(#blueArrowhead)" style="display:none"/>
             <path id="drawArrow" class="arrow" d="M172 101 C211 74 205 22 168 30" marker-end="url(#arrowhead)" style="display:none"/>
             <ellipse id="drawCircle" class="circle" cx="166" cy="72" rx="24" ry="83" style="display:none"/>
           </svg>
@@ -338,33 +344,75 @@ const cellKeys=['topT','topU','botT','botU','ansT','ansU'];
 let S=null, interval=null, target=null;
 let values={};
 function clearValues(){values={topT:'',topU:'',botT:'',botU:'',ansT:'',ansU:'',note1:'',note2:'',horizontal:''};target=null}
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function makeProblem(){
-  const selectedKind=$('kind').value;
-  const kind=selectedKind==='mixed'?S.problemKinds[S.index]:selectedKind;
-  let a,b,borrow,attempts=0;
-  do {
-    a=rand(11,19); b=rand(1,9); borrow=(a%10)<b;
-    attempts++;
-  } while ((kind==='borrow'&&!borrow || kind==='direct'&&borrow || S.usedProblems.has(a+'-'+b)) && attempts<300);
-  S.usedProblems.add(a+'-'+b);
-  return {a,b,borrow,answer:a-b};
-}
-function makeProblemKinds(total){
-  const kinds=[];
-  for(let i=0;i<total;i+=5){
-    const block=['borrow','borrow','borrow','borrow','direct'];
-    for(let j=block.length-1;j>0;j--){const k=rand(0,j);[block[j],block[k]]=[block[k],block[j]]}
-    kinds.push(...block);
-  }
-  return kinds;
-}
 function timeString(sec){const m=String(Math.floor(sec/60)).padStart(2,'0');const s=String(sec%60).padStart(2,'0');return `${m}:${s}`}
+// GitHub Pages 독립 실행: 인터넷 또는 서버 없이 문제 출제·검증
+function shuffleList(list){
+ const result=list.slice();
+ for(let i=result.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));
+   [result[i],result[j]]=[result[j],result[i]];
+ }
+ return result;
+}
+function makeQuestionBank(total,kind){
+ const borrow=[],direct=[];
+ for(let a=11;a<=19;a++){
+   for(let b=1;b<=9;b++){
+     const item={a,b};
+     if(a%10<b)borrow.push(item);else direct.push(item);
+   }
+ }
+ let selected=[];
+ if(kind==='borrow')selected=shuffleList(borrow).slice(0,total);
+ else if(kind==='direct')selected=shuffleList(direct).slice(0,total);
+ else {
+   // 5문제당 받아내림 4개 + 바로 빼기 1개
+   for(let i=0;i<total/5;i++){
+     selected.push(...shuffleList(borrow).slice(0,4));
+     selected.push(...shuffleList(direct).slice(0,1));
+   }
+   selected=shuffleList(selected);
+ }
+ return selected.map((q,index)=>({...q,index}));
+}
 function goHome(){document.body.classList.remove('finalStage');$('finalDock').classList.add('hide');clearShape();if(interval) clearInterval(interval); interval=null; S=null; $('setup').classList.remove('hide'); $('game').classList.add('hide'); $('end').classList.add('hide'); $('handModal').classList.add('hide'); clearValues()}
-function start(){clearValues();S={total:+$('count').value,index:0,wins:0,errs:0,start:Date.now(),p:null,step:'build',method:null,tries:0,attempted:false,arrowPicks:[],circlePicks:[],problemKinds:makeProblemKinds(+$('count').value),usedProblems:new Set()};$('setup').classList.add('hide');$('game').classList.remove('hide');$('end').classList.add('hide');interval=setInterval(()=>{if(S)set('clock','⏱ '+timeString(Math.floor((Date.now()-S.start)/1000)))},1000);next()}
-function next(){clearShape();clearValues();S.p=makeProblem();S.step='build';S.method=null;S.tries=0;S.attempted=false;S.arrowPicks=[];S.circlePicks=[];set('eqLeft',S.p.a+' − '+S.p.b);$('drawArrow').style.display='none';$('drawCircle').style.display='none';show()}
+function start(){
+ clearValues();S={total:+$('count').value,index:0,wins:0,errs:0,start:Date.now(),p:null,step:'build',method:null,tries:0,attempted:false,arrowPicks:[],circlePicks:[],nextProblem:null,pendingVerify:false,compareChoice:null,questions:[]};
+ S.questions=makeQuestionBank(S.total,$('kind').value);
+ $('setup').classList.add('hide');$('game').classList.remove('hide');$('end').classList.add('hide');
+ set('guide','첫 문제를 준비해요.');set('stepmark','문제 준비');
+ interval=setInterval(()=>{if(S)set('clock','⏱ '+timeString(Math.floor((Date.now()-S.start)/1000)))},1000);
+ next();
+}
+function next(){
+ if(!S)return;
+ const p=S.questions[S.index];
+ if(!p){finish();return;}
+ clearShape();clearValues();
+ S.p={a:p.a,b:p.b,borrow:p.a%10<p.b,answer:p.a-p.b};
+ S.step='build';S.method=null;S.tries=0;S.attempted=false;S.arrowPicks=[];S.circlePicks=[];S.compareChoice=null;
+ set('eqLeft',S.p.a+' − '+S.p.b);$('drawArrow').style.display='none';$('drawCircle').style.display='none';show();
+}
 const calcNotes=()=>S.method==='one'?[['note1','거꾸로 뺀 수']]:S.method==='two'?[['note1','아랫수의 10짝궁수']]:[];
 function activate(key){target=key;paint()}
+function svgPointForRect(svgRect,x,y){return {x:(x-svgRect.left)*191/Math.max(1,svgRect.width),y:(y-svgRect.top)*206/Math.max(1,svgRect.height)}}
+function positionCompareMarks(){
+  const svg=$('compareSvg'); const topT=document.querySelector('[data-cell="topT"]'); const ansT=document.querySelector('[data-cell="ansT"]');
+  if(!svg||!topT||!ansT) return;
+  const s=svg.getBoundingClientRect(), t=topT.getBoundingClientRect(), a=ansT.getBoundingClientRect();
+  const slashA=svgPointForRect(s,t.left+t.width*0.14,t.top+t.height*0.78);
+  const slashB=svgPointForRect(s,t.left+t.width*0.72,t.top+t.height*0.16);
+  $('compareSlash').setAttribute('x1',slashA.x.toFixed(1)); $('compareSlash').setAttribute('y1',slashA.y.toFixed(1));
+  $('compareSlash').setAttribute('x2',slashB.x.toFixed(1)); $('compareSlash').setAttribute('y2',slashB.y.toFixed(1));
+  const cx=(t.left+t.width/2-s.left)*191/Math.max(1,s.width), cy=(t.top+t.height/2-s.top)*206/Math.max(1,s.height);
+  $('compareCircle').setAttribute('cx',cx.toFixed(1)); $('compareCircle').setAttribute('cy',cy.toFixed(1));
+  $('compareCircle').setAttribute('rx',(t.width*0.38*191/Math.max(1,s.width)).toFixed(1));
+  $('compareCircle').setAttribute('ry',(t.height*0.42*206/Math.max(1,s.height)).toFixed(1));
+  const arrowStart=svgPointForRect(s,t.left+t.width/2,t.top+t.height*0.70);
+  const arrowEnd=svgPointForRect(s,a.left+a.width/2,a.top-6);
+  $('compareDownArrow').setAttribute('x1',arrowStart.x.toFixed(1)); $('compareDownArrow').setAttribute('y1',arrowStart.y.toFixed(1));
+  $('compareDownArrow').setAttribute('x2',arrowEnd.x.toFixed(1)); $('compareDownArrow').setAttribute('y2',arrowEnd.y.toFixed(1));
+}
 function paint(){
   for(const key of cellKeys){
     let e=document.querySelector('[data-cell="'+key+'"]');
@@ -374,6 +422,10 @@ function paint(){
   }
   for(const key of ['note1','note2']){const e=document.querySelector('[data-note="'+key+'"]'); if(e){e.textContent=values[key]||' '; e.classList.toggle('active',target===key); e.classList.toggle('done',!!values[key]); e.disabled=!(S.step==='note1'&&key==='note1'||S.step==='note2'&&key==='note2')}}
   $('eqAnswer').textContent=values.horizontal||'?'; $('eqAnswer').classList.remove('selected');
+  positionCompareMarks();
+  $('compareSlash').style.display=S.compareChoice==='no'?'':'none';
+  $('compareCircle').style.display=S.compareChoice==='yes'?'':'none';
+  $('compareDownArrow').style.display=S.compareChoice==='yes'?'':'none';
   $('drawArrow').style.display=S.arrowPicks.length===2?'':'none'; $('drawCircle').style.display=S.circlePicks.length===2?'':'none';
 }
 function setStep(step){clearTimeout(autoProgressTimer);S.step=step;S.tries=0;S.attempted=false;target=null;set('feedback','');$('feedback').className='feedback';show()}
@@ -408,7 +460,7 @@ function show(){
   if(S.step==='method'){const preferred=$('method').value; if(preferred==='choose'){choices([['one','1번 · 거꾸로 풀기 (화살표)'],['two','2번 · 짝궁수 구하기 (동그라미)']])} else {selectMethod(preferred); return;}}
   updateShapeMode();
   if(S.step==='build'){$('check').classList.add('hide');}
-  if(S.step==='finish'){ setTimeout(()=>{if(S && S.step==='finish'){S.index++;if(S.index===S.total)finish();else next()}},850)}
+  if(S.step==='finish'){setTimeout(()=>{if(S && S.step==='finish'){if(S.index+1===S.total)finish();else {S.index++;next()}}},850)}
   syncFinalDock();
   paint();
 }
@@ -416,14 +468,15 @@ function sideChoices(){
  const host=$('sideChoices');host.classList.remove('hide');host.innerHTML='';
  [['yes','네','네, 바로 뺄 수 있어요'],['no','아니요','아니요, 바로 못 빼요']].forEach(([value,label,aria])=>{
    const b=document.createElement('button');b.type='button';b.className='sideChoice '+(value==='yes'?'choice-yes':'choice-no');
-   b.textContent=label;b.setAttribute('aria-label',aria);b.onclick=()=>choose(value);host.appendChild(b);
+   b.textContent=label;b.setAttribute('aria-label',aria);b.disabled=!!S.compareChoice;
+   b.onclick=()=>choose(value);host.appendChild(b);
  });
 }
 function choices(arr){$('choices').classList.remove('hide'); $('check').classList.add('hide'); $('choices').innerHTML=''; arr.forEach(([val,label])=>{let btn=document.createElement('button'); btn.className='option'+(S.step==='compare'?(val==='yes'?' choice-yes':' choice-no'):S.step==='method'?(val==='one'?' choice-arrow':' choice-circle'):''); btn.textContent=label; btn.onclick=()=>choose(val); $('choices').appendChild(btn)})}
 function pickButtons(arr){$('tapTargets').classList.remove('hide'); $('check').classList.add('hide'); $('tapTargets').innerHTML=''; arr.forEach(([val,label])=>{const btn=document.createElement('button'); btn.textContent=label; btn.onclick=()=>pick(val); $('tapTargets').appendChild(btn)})}
 function markBad(msg){S.errs++; set('errs',S.errs); S.tries++; const f=$('feedback'); f.textContent=msg+(S.tries===1?' 한 번 더 해 보세요!':' 다시 살펴보고 고쳐 보세요.'); f.className='feedback bad'}
 function markGood(msg){const f=$('feedback'); f.textContent=msg; f.className='feedback ok'}
-function choose(val){if(S.step==='compare'){const correct=S.p.borrow?'no':'yes'; if(val!==correct){markBad('일의 자리를 다시 비교해요.'); return} if(val==='yes')setStep('answer'); else setStep('method')} else if(S.step==='method')selectMethod(val)}
+function choose(val){if(S.step==='compare'){const correct=S.p.borrow?'no':'yes'; if(val!==correct){markBad('일의 자리를 다시 비교해요.'); return} S.compareChoice=val; paint(); sideChoices(); markGood(val==='yes'?'네, 십의 자리 1이 그대로 내려와요!':'아니요, 십의 자리 1을 빗금쳐요!'); setTimeout(()=>{if(!S||S.step!=='compare')return; if(val==='yes')setStep('answer'); else setStep('method')},520)} else if(S.step==='method')selectMethod(val)}
 function selectMethod(val){S.method=val; if(val==='one')setStep('arrow'); else setStep('note1')}
 function pick(val){const arr=S.step==='arrow'?S.arrowPicks:S.circlePicks; const expected=S.step==='arrow'?['bottom','top']:['top','buddy']; if(val!==expected[arr.length]){markBad('누르는 순서를 다시 확인해요.'); return} arr.push(val); show(); if(arr.length===2){markGood(S.step==='arrow'?'화살표를 잘 그렸어요!':'두 수를 동그라미로 잘 묶었어요!'); $('tapTargets').classList.add('hide'); $('check').classList.add('hide'); $('check').textContent='다음 단계 ▶'}}
 function numberOf(hi,lo){if(!values[lo])return null; return (values[hi]?+values[hi]*10:0)+(+values[lo])}
@@ -486,7 +539,7 @@ for(const digit of ['1','2','3','4','5','6','7','8','9','','0','']){
   if(digit){btn.textContent=digit;btn.type='button';btn.onclick=()=>inputDigit(digit);}else{btn.disabled=true;btn.style.visibility='hidden';}
   digitKeys.appendChild(btn);
 }
-function validTarget(key){return S && ((S.step==='build'&&['topT','topU','botT','botU'].includes(key)) ||(S.step==='answer'&&['ansT','ansU'].includes(key))||(S.step==='note1'&&key==='note1')||(S.step==='horizontal'&&key==='horizontal'));}
+function validTarget(key){return S && S.p && ((S.step==='build'&&['topT','topU','botT','botU'].includes(key)) ||(S.step==='answer'&&['ansT','ansU'].includes(key))||(S.step==='note1'&&key==='note1')||(S.step==='horizontal'&&key==='horizontal'));}
 function openPad(key){
  if(!validTarget(key))return;
  keypadTarget=key;target=key;
@@ -542,7 +595,10 @@ function autoAdvanceInput(key){
     clearTimeout(autoProgressTimer);
     autoProgressTimer=setTimeout(()=>{
       if(!S||S.step===nextStep)return;
-      if(nextStep==='finish')S.wins++;
+      if(nextStep==='finish'){
+        if(Number(values.horizontal)!==S.p.answer){markBad('가로식의 답을 다시 확인해요.');return;}
+        S.wins++;
+      }
       setStep(nextStep);
     },380);
   }
